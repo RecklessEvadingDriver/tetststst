@@ -1,0 +1,55 @@
+name: MLX-LM API Server
+
+on:
+  workflow_dispatch:  # Allows manual trigger
+    inputs:
+      port:
+        description: 'Port to run the server on'
+        required: false
+        default: '8000'
+      duration:
+        description: 'How long to run the server (minutes)'
+        required: false
+        default: '30'
+
+jobs:
+  run-api-server:
+    # Note: MLX requires Apple Silicon (M1/M2/M3). 
+    # For this to work in production, you'd need a self-hosted runner on macOS with Apple Silicon.
+    # Using macos-latest as it's the closest available option on GitHub Actions.
+    runs-on: macos-latest
+    
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Start API Server
+        run: |
+          echo "Starting MLX-LM API Server on port ${{ github.event.inputs.port || '8000' }}"
+          echo "Server will run for ${{ github.event.inputs.duration || '30' }} minutes"
+          echo "Access the API at: http://localhost:${{ github.event.inputs.port || '8000' }}"
+          echo "API Documentation: http://localhost:${{ github.event.inputs.port || '8000' }}/docs"
+          
+          # Run the server in the background
+          python api_server.py &
+          SERVER_PID=$!
+          
+          # Wait for the specified duration
+          sleep $((${{ github.event.inputs.duration || '30' }} * 60))
+          
+          # Stop the server
+          kill $SERVER_PID || true
+          echo "Server stopped after ${{ github.event.inputs.duration || '30' }} minutes"

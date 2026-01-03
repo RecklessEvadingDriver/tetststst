@@ -1,1 +1,5 @@
 mlx-lm
+fastapi
+uvicorn[standard]
+pydantic
+requests

@@ -18,6 +18,9 @@ jobs:
     # Using macos-latest as it's the closest available option on GitHub Actions.
     runs-on: macos-latest
     
+    permissions:
+      contents: read
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
